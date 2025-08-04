@@ -1,0 +1,146 @@
+# application.yml - Configuration MySQL sans mot de passe
+server:
+  port: 8080
+
+spring:
+  application:
+    name: agriculture-mauritanie-api
+  
+  # Configuration MySQL par défaut
+  datasource:
+    url: jdbc:mysql://localhost:3306/projet_agriculteur?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      leak-detection-threshold: 60000
+      pool-name: AgricultureHikariCP
+
+  # Configuration JPA/Hibernate pour MySQL
+  jpa:
+    database-platform: org.hibernate.dialect.MySQLDialect
+    hibernate:
+      ddl-auto: update
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+        batch_versioned_data: true
+        dialect: org.hibernate.dialect.MySQLDialect
+
+  # Configuration de la validation
+  validation:
+    enabled: true
+
+  # Configuration Jackson pour JSON
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+      indent-output: true
+    deserialization:
+      fail-on-unknown-properties: false
+    time-zone: Africa/Nouakchott
+    locale: fr_MR
+
+# Configuration JWT
+app:
+  jwt:
+    secret: ${JWT_SECRET:agriculture-mauritanie-super-secret-key-2024-very-very-long-secret-key}
+    expiration: ${JWT_EXPIRATION:86400} # 24 heures en secondes
+    refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800} # 7 jours en secondes
+
+# Configuration Logging
+logging:
+  level:
+    com.agriculture.mauritanie: DEBUG
+    org.springframework.security: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    com.mysql.cj: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Configuration Swagger/OpenAPI
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+    doc-expansion: none
+    display-request-duration: true
+
+# Configuration Management/Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+  health:
+    db:
+      enabled: true
+
+# Configuration de l'application
+agriculture:
+  app:
+    name: "Plateforme Agricole Mauritanie"
+    version: "1.0.0"
+    description: "API pour la plateforme numérique d'accompagnement des agriculteurs mauritaniens"
+    
+    # Configuration des régions mauritaniennes
+    regions:
+      - "Nouakchott"
+      - "Adrar"
+      - "Assaba"
+      - "Brakna"
+      - "Dakhlet Nouadhibou"
+      - "Gorgol"
+      - "Guidimaka"
+      - "Hodh Ech Chargui"
+      - "Hodh El Gharbi"
+      - "Inchiri"
+      - "Tagant"
+      - "Tiris Zemmour"
+      - "Trarza"
+
+---
+# Configuration pour l'environnement de test avec H2
+spring:
+  config:
+    activate:
+      on-profile: test
+
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+
+logging:
+  level:
+    org.springframework.web: INFO
+    com.agriculture.mauritanie: DEBUG
